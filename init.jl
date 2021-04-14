@@ -74,7 +74,7 @@ function output_mime(filename; fallback="")
     get(MIMES, isempty(ext) ? fallback : ext[2:end], MIMES[fallback])
 end
 
-function OrgBabelEval(src_file, output_file, params)
+function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
     """ob-julia entry point.  Run the code contained in `src-file',
     wrapped in a block where variables defined in `vars-file' are set.
     The output is written to `output_file', according to config
@@ -91,7 +91,6 @@ function OrgBabelEval(src_file, output_file, params)
     temporary_output, temporary_stream = safe_mktemp(output_file)
     # Parse the params (named tuple passed by ob-julia)
     params = Main.eval(Meta.parse(params))
-    println("AAA",output_file)
     mime = output_mime(output_file)
     success, result = org_eval(src_file, temporary_stream, working_dir(params), mime)
     if ! success
@@ -111,5 +110,8 @@ function OrgBabelEval(src_file, output_file, params)
         io = IOBuffer()
         display(ObJuliaDisplay(io), mime, result)
         write(output_file, take!(io))
+    end
+    if async_uuid !== nothing
+        println("ob_julia_async_$(async_uuid)")
     end
 end
