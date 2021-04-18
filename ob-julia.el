@@ -181,6 +181,9 @@ properties `properties'."
       (inferior-ess-output-filter process output))))
 
 (defun org-babel-julia-evaluate-external-process:async (cmd uuid properties)
+  "Run CMD in a separate process.  The output buffer will be
+*ob-julia-async-process*, with an async filter registered on it.
+The block PROPERTIES will be stored with uuid UUID."
   (make-process :name "*ob-julia-async-process*"
         	:filter #'org-julia-async-process-filter
         	:command cmd)
@@ -451,6 +454,8 @@ If session should not be used, return nil.
 
 (defun org-babel-julia-evaluate-in-session
     (session block OrgBabelEval-call uuid params output-file org-buffer)
+  "Evaluate BLOCK in session SESSION, starting it if necessary.
+If UUID is provided, run the block asynchronously."
   ;; If the session does not exists, start it
   (when (not (org-babel-comint-buffer-livep session))
     (org-babel-prep-session:julia session params))
