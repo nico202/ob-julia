@@ -1,4 +1,5 @@
 include("display.jl")
+include("packages.jl")
 
 # Simple params accessors with fallback for src block params
 param(name, fallback) = p -> something(get(p, name, fallback), fallback)
@@ -93,6 +94,9 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
     params = Main.eval(Meta.parse(params))
     mime = output_mime(output_file)
     success, result = org_eval(src_file, temporary_stream, working_dir(params), mime)
+    # Now the code has been executed and imports have been imported.
+    # We can reload supported display function so maybe one of them will be used
+    OrgBabelReload()
     if ! success
         # Execution failed, write stacktrace file
         trace_file = string(output_file, ".trace")
@@ -108,7 +112,10 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
     else
         # We need to write the output results to the output file
         io = IOBuffer()
-        display(ObJuliaDisplay(io), mime, result)
+        # Since display function might get re-defined during the
+        # execution of this function (because of OrgBabelReload) we
+        # want to be sure to call the latest version
+        Base.invokelatest(display, ObJuliaDisplay(io), mime, result)
         write(output_file, take!(io))
     end
     if async_uuid !== nothing
