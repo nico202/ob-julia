@@ -22,21 +22,20 @@ const MIMES = Dict(
     "svg"  => MIME("image/svg+xml"),
     "tex"  => MIME("application/x-tex"))
 
+"""Remove from the stacktrace info about ob-julia, to have a cleaner
+output."""
 function drop_useless_trace(trace)
-    "Remove from the stacktrace info about ob-julia, to have a cleaner
-    output."
     idx = findfirst(f -> f.func == Symbol("top-level scope"), trace)
     trace[idx:end]
 end
 
+"""Safely evaluate `code'.  Store stdout and stderr to `output_stream'
+and return a tuple with the outcome of the evaluation and its result.
+If an exception is thrown, the outcome is false and the trace is
+returned.  Directory during evaluation is chanded `dir', which
+defaults to the current directory.  The output will be printed to a
+display with mime type `mime'."""
 function org_eval(src, output_stream, dir=pwd(), mime=MIMES[""])
-    """Safely evaluate `code'.  Store stdout and stderr to
-       `output_stream' and return a tuple with the outcome of the
-       evaluation and its result.  If an exception is thrown, the
-       outcome is false and the trace is returned.
-       Directory during evaluation is chanded `dir', which defaults 
-       to the current directory.  
-       The output will be printed to a display with mime type `mime'."""
     # Meta.parse parses only one expression, so we wrap the code in a
     # block.  It can either be a let block or a begin block.
     return cd(expanduser(dir)) do
@@ -63,9 +62,9 @@ function org_eval(src, output_stream, dir=pwd(), mime=MIMES[""])
     end
 end
 
+"""Determine the output MIME type based on filename.  Fallback to
+`fallback`."""
 function output_mime(filename; fallback="")
-    "Determine the output MIME type based on filename.  Fallback to
-    `fallback'."
     # ext might either be an empty string or an extension with a "."
     # prefix
     ext = splitext(filename)[end]
@@ -75,14 +74,14 @@ function output_mime(filename; fallback="")
     get(MIMES, isempty(ext) ? fallback : ext[2:end], MIMES[fallback])
 end
 
+"""ob-julia entry point.  Run the code contained in `src-file`,
+wrapped in a block where variables defined in `vars-file` are set.
+The output is written to `output_file`, according to config
+options defined in `params`."""
 function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
-    """ob-julia entry point.  Run the code contained in `src-file',
-    wrapped in a block where variables defined in `vars-file' are set.
-    The output is written to `output_file', according to config
-    options defined in `params'."""
+    "Return a temporary file in the same dir as `output`.
+     Create the dir if it does not exists."
     function safe_mktemp(output)
-        "Return a temporary file in the same dir as `output'.  
-         Create the dir if it does not exists."
         dir = dirname(output)
         mkpath(dir)
         mktemp(dir)

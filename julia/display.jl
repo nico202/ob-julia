@@ -53,10 +53,10 @@ function display(d::ObJuliaDisplay, ::MIME"text/org", t::NamedTuple)
                "\n"))
 end
 
-function display(d::ObJuliaDisplay, ::MIME"text/org",
-                 nt::Vector{<:NamedTuple})
-    "This assume keys are the same."
+"""Format a named vector of named tuple as a table."""
+function display(d::ObJuliaDisplay, ::MIME"text/org", nt::Vector{<:NamedTuple})
     length(nt) == 0 && return ""
+    # This assume keys are the same.
     # check that all the keys are equal
     if length(nt) > 1 && length(unique([keys(x) for x in nt])) == 1
         # Format as a table

@@ -13,9 +13,9 @@ const supported_packages = []
 "Call define_\$pkg function."
 define_package_functions(pkg::Symbol) = (@eval $pkg)()
 
+"Defines show methods based on packages loaded by the user in the
+current session."
 function OrgBabelReload()
-    "Defines show methods based on packages loaded by the user in the
-    current session."
     for pkg in supported_packages
         if isdefined(Main, pkg) && (isa(getfield(Main, pkg), Module) ||
                                     isa(getfield(Main, pkg), UnionAll))

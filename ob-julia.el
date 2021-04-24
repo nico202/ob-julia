@@ -64,12 +64,12 @@ automatically."
 ;; Real code starts here ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun org-babel-julia-params->named-tuple (params)
-  "Takes the arguments in `params' that needs to be processed by
+  "Takes the arguments in PARAMS that needs to be processed by
 Julia, and put them in a NamedTuple() that will be passed to Julia."
   (defun param->julia (param &optional julia-name)
-    "Takes the org parm named `param' from params and return an
+    "Takes the org parm named PARAM from params and return an
 equivalent Julia assignment.  The value will be assigned to
-`julia-name' when not nil.  Elisp types are converted to Julia
+JULIA_NAME when not nil.  Elisp types are converted to Julia
 equivalents."
     (let* ((name (symbol-name param))
            (name (or julia-name
@@ -89,7 +89,7 @@ equivalents."
                      ", ")))
 
 (defvar org-babel-julia--async-map '()
-  "association list between async block uuids and its requried info (evaluation params, buffer).")
+  "Association list between async block uuids and its requried info (evaluation params, buffer).")
 
 (defun org-babel-julia-prepare-format-call (src-file out-file params &optional uuid)
   "Format a call to OrgBabelEval
@@ -115,15 +115,15 @@ the startup script."
     buf))
 
 (defun org-babel-julia--async-get-remove (uuid)
-  "Get `uuid' from the list of async processes, remove it from
+  "Get UUID from the list of async processes, remove it from
   the list and return its value."
   (let ((el (assoc uuid org-babel-julia--async-map)))
     (setq org-babel-julia--async-map (delq el org-babel-julia--async-map))
     el))
 
 (defun org-babel-julia--async-add (uuid properties)
-  "Register the async background block, identified by `uuid' with
-properties `properties'."
+  "Register the async background block, identified by UUID with
+properties PROPERTIES."
   (setq org-babel-julia--async-map
         (cons `(,uuid . ,properties) org-babel-julia--async-map)))
 
@@ -188,7 +188,7 @@ The block PROPERTIES will be stored with uuid UUID."
   (org-babel-julia--async-add uuid properties))
 
 (defun org-babel-julia-evaluate-external-process:sync (cmd buf)
-  "Evaluate `cmd' synchronously, storing stderr in `buf'."
+  "Evaluate CMD synchronously, storing stderr in BUF."
   ;; We use the same cmd for both make-process and shell-command, here
   ;; we escape the parts.
   (shell-command (mapconcat (lambda (c) (format "%S" c)) cmd " ") nil buf))
@@ -197,8 +197,8 @@ The block PROPERTIES will be stored with uuid UUID."
     (org-babel-eval-call async params output-file org-buffer)
   "Evaluate ORG_BABEL_EVAL_CALL in an external Julia process.
 If the shell-command returns an error, show it in a stacktrace buffer.
-Depending on `async' the appropriate evaluation is choosen.
-`org-buffer' stores the provenance of the execution (required for
+Depending on ASYNC the appropriate evaluation is choosen.
+ORG_BUFFER stores the provenance of the execution (required for
 async evaluation)."
   ;; We write shell-command output to a trace-buffer so that we are
   ;; able to capture internal ob-julia errors
@@ -244,7 +244,7 @@ Please submit a bug report!")
   name passed to the :file argument.  It might contain a
   non-existing path (when :output-dir is a non-existing
   directory).
-  If `extension' is not nil, use it as file extension."
+  If EXTENSION is not nil, use it as file extension."
   (or file
       (org-babel-process-file-name
        (org-babel-temp-file
@@ -317,7 +317,7 @@ table. To force a matrix, use matrix"
   (org-babel-julia-process-results params output-file))
 
 (defun org-babel-julia-assign-to-var (name value)
-  "Assign `VALUE' to a variable called `NAME'."
+  "Assign VALUE to a variable called NAME."
   (format "%s = %S" name value))
 
 (defun org-babel-julia-assign-to-var-or-array (var)
@@ -328,8 +328,8 @@ table. To force a matrix, use matrix"
 
 (defun org-babel-julia-assign-to-dict (name column-names values)
   "Create a Dict with lists as values.
-Create a Dict where keys are Symbol from `COLUMN-NAMES',
-values are Array taken from `VALUES', and assign it to `NAME'"
+Create a Dict where keys are Symbol from COLUMN-NAMES,
+values are Array taken from VALUES, and assign it to NAME"
   (format "%s = Dict(%s)" name
 	  (mapconcat
 	   (lambda (i)
@@ -434,7 +434,7 @@ If session should not be used, return nil.
        'org-julia-async-process-filter-ess))))
 
 (defun org-babel-julia-evaluate-in-session:sync (session body block output)
-  "Run FILE, in session `SESSION`, synchronously."
+  "Run FILE, in session SESSION, synchronously."
   (org-babel-comint-eval-invisibly-and-wait-for-file
    session output body 0.1)
   (with-current-buffer session
@@ -443,7 +443,7 @@ If session should not be used, return nil.
 
 (defun org-babel-julia-evaluate-in-session:async
     (session uuid body block output properties)
-  "Run FILE, in session `SESSION`, synchronously."
+  "Run FILE, in session SESSION, synchronously."
   (process-send-string session (concat body "\n"))
   (with-current-buffer session
     (comint-add-to-input-history block))
