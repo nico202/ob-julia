@@ -50,8 +50,6 @@ automatically."
     (height		 . :any)
     (size		 . :any)
     (let		 . :any)
-    ;; (import		 . :any)
-    ;; (using		 . :any)
     (async		 . :any)
     (results		 . ((file matrix table list)
 			    (raw html latex org)
