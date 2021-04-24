@@ -1,0 +1,27 @@
+* Things to do [6/11] [54%]
+  - [X] Sync standalone
+  - [X] Async standalone
+  - [X] Sync =:session=
+  - [X] Async =:session=
+  - [X] =:results output=
+  - [X] =:results value=
+  - [-] Stdlib types
+    - [X] Vector
+    - [X] Array
+    - [X] Matrix
+    - [X] NamedTuple
+    - [-] List of NamedTuple
+    - [ ] Dicts?
+    - [ ] Others?
+  - [ ] External packages
+    - [ ] Image output
+    - Which packages we want to support?
+  - [ ] Fix issue of =:var= depending on async blocks
+  - [ ] Re-add kwargs support (required for plots :width and :height)
+  - [-] HTML export?
+  - [-] Exceptions
+    - [-] Stacktrace buffer
+      - [X] Open Exception in new buffer
+      - [ ] Clickable line number
+    - [ ] Format output
+  - [ ] Way to interrupt async blocks?
