@@ -254,13 +254,9 @@ Please submit a bug report!")
   "Insert hline if needed (combining info from RESULT and TYPE."
   ;; add an hline if the result seems to be a table
   ;; always obay explicit type
-  (if (or (eq type 'table)
-	    (and (eq type 'auto)
-	         (listp results)       ; a table must be a list
-	         (listp (car results)) ; of lists
-	         (stringp (caar results)))) ; with strings as first line
-        (cons (car results) (cons 'hline (cdr results)))
-      results))
+  (if (eq type 'table)
+      (cons (car results) (cons 'hline (cdr results)))
+    results))
 
 (defun org-babel-julia-parse-result-type (params)
   "Decide how to parse results. Default is \"auto\"
