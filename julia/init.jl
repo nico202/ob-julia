@@ -1,6 +1,7 @@
 module ObJulia
 
 include("display.jl")
+include("base.jl")
 include("stdlib.jl")
 include("packages.jl")
 
