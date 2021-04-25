@@ -24,9 +24,9 @@ function display(d::ObJuliaDisplay, ::MIME"text/org", i::AbstractArray{T,2};
     print(d.io, out)
 end
 
-function display(d::ObJuliaDisplay, ::MIME"text/csv", i::Array{T,2};
+function display(d::ObJuliaDisplay, ::MIME"text/csv", i::AbstractArray{T,2};
                  kwargs...) where T <: Any
-    orgshow(d.io, MIME("text/org"), i; kwargs...)
+    display(d, MIME("text/org"), i; kwargs...)
 end
 
 function display(d::ObJuliaDisplay, ::MIME"text/org", t::NamedTuple)
