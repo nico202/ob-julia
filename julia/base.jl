@@ -8,7 +8,7 @@ display(d::ObJuliaDisplay, ::MIME"text/org", ::Nothing; kwargs...) =
 display(d::ObJuliaDisplay, ::MIME"text/org", a::Array{T,1}; kwargs...) where T <: Any =
     print(d.io, join(a, '\n'))
 
-function display(d::ObJuliaDisplay, ::MIME"text/html", i::Array{T,2};
+function display(d::ObJuliaDisplay, ::MIME"text/html", i::AbstractArray{T,2};
                  kwargs...) where T <: Any
     width = get(Dict(kwargs), :width, "100")
     println(d.io, """<table style="width:$width%">""")
@@ -18,7 +18,7 @@ function display(d::ObJuliaDisplay, ::MIME"text/html", i::Array{T,2};
     print(d.io, content, "</table>")
 end
 
-function display(d::ObJuliaDisplay, ::MIME"text/org", i::Array{T,2};
+function display(d::ObJuliaDisplay, ::MIME"text/org", i::AbstractArray{T,2};
                  kwargs...) where T <: Any
     out = eachrow(i) |> x -> join([join(l, ',') for l in x], '\n')
     print(d.io, out)
