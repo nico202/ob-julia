@@ -5,8 +5,8 @@ display(d::ObJuliaDisplay, ::MIME"text/org", t::Tuple; kwargs...) =
     print(d.io, join(t, ','))
 display(d::ObJuliaDisplay, ::MIME"text/org", ::Nothing; kwargs...) =
     print(d.io, "")
-display(d::ObJuliaDisplay, ::MIME"text/org", a::Array{T,1}; kwargs...) where T <: Any =
-    print(d.io, join(a, '\n'))
+display(d::ObJuliaDisplay, ::MIME"text/org", a::AbstractArray{T,1};
+        kwargs...) where T <: Any = print(d.io, join(a, '\n'))
 
 function display(d::ObJuliaDisplay, ::MIME"text/html", i::AbstractArray{T,2};
                  kwargs...) where T <: Any
