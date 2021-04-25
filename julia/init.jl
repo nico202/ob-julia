@@ -1,6 +1,7 @@
 module ObJulia
 
 include("display.jl")
+include("stdlib.jl")
 include("packages.jl")
 
 # Simple params accessors with fallback for src block params
