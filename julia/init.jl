@@ -1,3 +1,5 @@
+module ObJulia
+
 include("display.jl")
 include("packages.jl")
 
@@ -121,3 +123,5 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
         println("ob_julia_async_$(async_uuid)")
     end
 end
+
+end # module
