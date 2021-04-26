@@ -10,11 +10,11 @@ display(d::ObJuliaDisplay, ::MIME"text/org", a::AbstractArray{T,1};
 
 function display(d::ObJuliaDisplay, ::MIME"text/html", i::AbstractArray{T,2};
                  kwargs...) where T <: Any
-    width = get(Dict(kwargs), :width, "100")
+    width = param(:width, "100")(kwargs)
     println(d.io, """<table style="width:$width%">""")
-    content = eachrow(i) |> x -> string("<tr>",
-                                        join([string("<th>", join(l, "</th><th>"))
-                                              for l in x], "</tr><tr>\n"))
+    content = string("<tr>\n",
+                     join([string("<th>", join(l, "</th><th>"))
+                           for l in eachrow(i)], "</tr><tr>\n"))
     print(d.io, content, "</table>")
 end
 
