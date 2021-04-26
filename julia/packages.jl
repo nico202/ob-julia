@@ -41,4 +41,9 @@ function define_Latexify()
                            l::Main.Latexify.LaTeXStrings.LaTeXString; kwargs...)
         print(d.io, String(l))
     end
+    # We want to latexify anything we can if the output is a tex file
+    @eval function display(d::ObJuliaDisplay, ::MIME"application/x-tex",
+                           obj::Any; kwargs...)
+        print(d.io, Main.latexify(obj))
+    end
 end
