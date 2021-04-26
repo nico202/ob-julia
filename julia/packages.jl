@@ -2,7 +2,7 @@
 # To add support for new packages:
 # 1. Add the package name as a Symbol in the supported_packages array
 # 2. Add a define_$pkg function
-# 3. That function should Main.@eval the required display() functions
+# 3. That function should @eval the required display() functions
 # 4. Test it
 
 """List of symbols of package names supported by ob-julia.
