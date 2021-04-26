@@ -8,7 +8,7 @@
 """List of symbols of package names supported by ob-julia.
 
 Packages already included in a session get removed from this list."""
-const supported_packages = []
+const supported_packages = [:LaTeXStrings, :Latexify]
 
 "Call define_\$pkg function."
 define_package_functions(pkg::Symbol) = (@eval $pkg)()
@@ -23,5 +23,22 @@ function OrgBabelReload()
             # Remove loaded packages from list to prevent multiple execution
             filter!(x -> x != pkg, supported_packages)
         end
+    end
+end
+
+function define_LaTeXStrings()
+    @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
+                           l::Main.LaTeXString; kwargs...)
+        print(d.io, String(l))
+    end
+end
+
+function define_Latexify()
+    # Latexify outputs LaTeXStrings.LaTeXString objects, but
+    # LaTeXStrings is not included into Main now.  That's why we have
+    # to define this method here
+    @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
+                           l::Main.Latexify.LaTeXStrings.LaTeXString; kwargs...)
+        print(d.io, String(l))
     end
 end
