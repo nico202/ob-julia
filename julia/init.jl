@@ -118,7 +118,7 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
         # Since display function might get re-defined during the
         # execution of this function (because of OrgBabelReload) we
         # want to be sure to call the latest version
-        Base.invokelatest(display, ObJuliaDisplay(io), mime, result)
+        Base.invokelatest(display, ObJuliaDisplay(io), mime, result; params...)
         write(output_file, take!(io))
     end
     if async_uuid !== nothing

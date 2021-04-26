@@ -85,7 +85,12 @@ equivalents."
           (mapconcat 'concat
                      (list
                       (param->julia :dir)
-                      (param->julia :results))
+                      (param->julia :results)
+                      ;; Optional arguments.  We pass them all and let
+                      ;; julia decide what to do
+                      (param->julia :size)
+                      (param->julia :width)
+                      (param->julia :height))
                      ", ")))
 
 (defvar org-babel-julia--async-map '()
