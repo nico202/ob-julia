@@ -289,8 +289,8 @@ table. To force a matrix, use matrix"
 (defun org-babel-julia-process-results (params output-file)
   "Decides what to insert as result.  If trace is true, add a drawer."
   (let ((result-type (org-babel-julia-parse-result-type params))
-	(file (alist-get :file params))
-	(res (alist-get :results params)))
+        (file (alist-get :file params))
+        (res (alist-get :results params)))
     (unless file			; do not process files
       (org-babel-result-cond (if res (split-string res) nil)
         (with-temp-buffer
