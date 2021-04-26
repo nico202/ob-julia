@@ -8,7 +8,9 @@
 """List of symbols of package names supported by ob-julia.
 
 Packages already included in a session get removed from this list."""
-const supported_packages = [:LaTeXStrings, :Latexify]
+const supported_packages = [
+    :DataFrames,
+    :Latexify, :LaTeXStrings]
 
 "Call define_\$pkg function."
 define_package_functions(pkg::Symbol) = (@eval $pkg)()
@@ -45,5 +47,21 @@ function define_Latexify()
     @eval function display(d::ObJuliaDisplay, ::MIME"application/x-tex",
                            obj::Any; kwargs...)
         print(d.io, Main.latexify(obj))
+    end
+end
+
+function define_DataFrames()
+    @eval function display(d::ObJuliaDisplay, ::MIME"text/csv",
+                           df::Main.DataFrame; kwargs...)
+        # text/org is just a csv which org parses automatically, so we
+        # can fallback to it
+        display(d, MIME("text/org"), df)
+    end
+    @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
+                           df::Main.DataFrame; kwargs...)
+        # We should use CSV.jl to output a DataFrame to csv.
+        out = join(string.(names(df)), ',') * '\n'
+        out *= join([join(x, ',') for x in eachrow(df) .|> collect],'\n')
+        print(d.io, out)
     end
 end
