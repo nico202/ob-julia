@@ -35,7 +35,7 @@ function display(d::ObJuliaDisplay, ::MIME"text/org", t::NamedTuple)
                "\n"))
 end
 
-"""Format a named vector of named tuple as a table."""
+"""Format a vector of named tuple as a table."""
 function display(d::ObJuliaDisplay, ::MIME"text/org", nt::Vector{<:NamedTuple})
     length(nt) == 0 && return ""
     # This assume keys are the same.
