@@ -296,6 +296,7 @@ table. To force a matrix, use matrix"
         (with-temp-buffer
           (insert-file-contents output-file)
           (buffer-string))
+        ;; FIXME: This fails to read some file
         (org-babel-julia-process-value-result
          (org-babel-import-elisp-from-file output-file '(4))
          result-type)))))
