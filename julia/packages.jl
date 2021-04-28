@@ -31,7 +31,7 @@ end
 function define_LaTeXStrings()
     @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
                            l::Main.LaTeXString; kwargs...)
-        print(d.io, String(l))
+        verbatim(d, String(l))
     end
 end
 
@@ -41,12 +41,12 @@ function define_Latexify()
     # to define this method here
     @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
                            l::Main.Latexify.LaTeXStrings.LaTeXString; kwargs...)
-        print(d.io, String(l))
+        verbatim(d, String(l))
     end
     # We want to latexify anything we can if the output is a tex file
     @eval function display(d::ObJuliaDisplay, ::MIME"application/x-tex",
                            obj::Any; kwargs...)
-        print(d.io, Main.latexify(obj))
+        verbatim(d, Main.latexify(obj))
     end
 end
 
@@ -55,13 +55,12 @@ function define_DataFrames()
                            df::Main.DataFrame; kwargs...)
         # text/org is just a csv which org parses automatically, so we
         # can fallback to it
-        display(d, MIME("text/org"), df)
+        out = join(string.(names(df)), ',') * '\n'
+        out *= join([join(x, ',') for x in eachrow(df) .|> collect],'\n')
+        write(d.io, out)
     end
     @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
                            df::Main.DataFrame; kwargs...)
-        # We should use CSV.jl to output a DataFrame to csv.
-        out = join(string.(names(df)), ',') * '\n'
-        out *= join([join(x, ',') for x in eachrow(df) .|> collect],'\n')
-        print(d.io, out)
+        table(d, sexp(eachrow(df) .|> collect))
     end
 end

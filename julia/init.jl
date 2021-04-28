@@ -1,6 +1,7 @@
 module ObJulia
 
 include("display.jl")
+include("sexp.jl")
 include("base.jl")
 include("stdlib.jl")
 include("packages.jl")
@@ -11,7 +12,34 @@ pure_p = param(:pure, false)
 working_dir = param(:dir, pwd())
 result(p) = get(p, :results, "") |> split
 result_is_output(p) = "output" in result(p)
+result_is_raw(p) = "raw" in result(p)
+result_is_matrix(p) = "matrix" in result(p)
+result_is_table(p) = "table" in result(p)
+result_is_list(p) = "list" in result(p)
+result_is_auto(p) = all(.![result_is_raw(p),
+                           result_is_list(p),
+                           result_is_matrix(p),
+                           result_is_table(p)])
 file_name = param(:file, nothing)
+
+# Result available result types
+
+"Return a function which takes two arguments, the display and the
+content to write to.  That function writes the content to the display,
+prepended by the type `t`."
+function write_type(t)
+    "Writes `t` followed by content to `d`."
+    function wrt(d::ObJuliaDisplay, content="")
+        println(d.io, t)
+        write(d.io, content)
+    end
+    return wrt
+end
+raw = write_type("raw")
+table = write_type("table")
+matrix = write_type("matrix")
+verbatim = write_type("verbatim")
+list = write_type("list")
 
 const MIMES = Dict(
     # keep those sorted :)
@@ -96,6 +124,14 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
     # Parse the params (named tuple passed by ob-julia)
     params = Main.eval(Meta.parse(params))
     mime = output_mime(output_file)
+    # If results is output, running the code will start writing data
+    # directly on the output file.  That's ok, but we need to tell
+    # ob-julia the way this data is formatted.  We have no idea, so
+    # let's use raw.  We might use header arguments for things like
+    # images
+    if result_is_output(params)
+        println(temporary_stream, "raw")
+    end
     success, result = org_eval(src_file, temporary_stream, working_dir(params), mime)
     # Now the code has been executed and imports have been imported.
     # We can reload supported display function so maybe one of them will be used
@@ -112,6 +148,8 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
         # Write the result to the temporary file
         # replace the output file with the file in which we wrote our results
         mv(temporary_output, output_file, force=true)
+    elseif result_is_raw(params)
+        write(output_file, string("raw\n", result))
     else
         # We need to write the output results to the output file
         io = IOBuffer()

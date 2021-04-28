@@ -134,15 +134,32 @@ properties PROPERTIES."
 
 (defun ob-julia--trace-file (output-file)
   (concat output-file ".trace"))
-(defun ob-julia--has-stacktrace (output-file)
-  (file-exists-p (ob-julia--trace-file output-file)))
-
 (defun org-julia-async-process-filter-ess (process output)
   "A function that is called when new output is available on the
   Julia buffer, which waits until the async execution is
   completed.  Replace julia-async: tags with async results.
   This version is specific to ESS."
   (org-julia-async-process-filter process output t))
+
+(defun ob-julia--has-stacktrace (output-file)
+  (file-exists-p (ob-julia--trace-file output-file)))
+
+(defun ob-julia-create-stacktrace-buffer (stacktrace-file &optional do-not-pop)
+  "Display the stacktrace in a new buffer"
+  (let ((buf (ob-julia--make-trace-buffer do-not-pop)))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (insert-file-contents stacktrace-file)))))
+
+(defun ob-julia-dispatch-output-type (params output-file &optional async)
+  ;; First, we have the special case in which the output is a
+  ;; stacktrace.  If there's one, open it in a buffer, then continue
+  ;; showing the results.
+  (when (ob-julia--has-stacktrace output-file)
+    ;; TODO: jump to the corresponding src line?
+    (ob-julia-create-stacktrace-buffer
+     (ob-julia--trace-file output-file) (when async -1)))
+  (org-babel-julia-process-results params output-file))
 
 (defun org-julia-async-process-filter (process output &optional fallback)
   "A function that is called when new output is available on the
@@ -291,32 +308,39 @@ table. To force a matrix, use matrix"
   (let ((result-type (org-babel-julia-parse-result-type params))
         (file (alist-get :file params))
         (res (alist-get :results params)))
-    (unless file			; do not process files
-      (org-babel-result-cond (if res (split-string res) nil)
-        (with-temp-buffer
-          (insert-file-contents output-file)
-          (buffer-string))
-        ;; FIXME: This fails to read some file
-        (org-babel-julia-process-value-result
-         (org-babel-import-elisp-from-file output-file '(4))
-         result-type)))))
-
-(defun ob-julia-create-stacktrace-buffer (stacktrace-file &optional do-not-pop)
-  "Display the stacktrace in a new buffer"
-  (let ((buf (ob-julia--make-trace-buffer do-not-pop)))
-    (with-current-buffer buf
-      (let ((inhibit-read-only t))
-        (insert-file-contents stacktrace-file)))))
-
-(defun ob-julia-dispatch-output-type (params output-file &optional async)
-  ;; First, we have the special case in which the output is a
-  ;; stacktrace.  If there's one, open it in a buffer, then continue
-  ;; showing the results.
-  (when (ob-julia--has-stacktrace output-file)
-    ;; TODO: jump to the corresponding src line?
-    (ob-julia-create-stacktrace-buffer
-     (ob-julia--trace-file output-file) (when async -1)))
-  (org-babel-julia-process-results params output-file))
+    (unless file
+      (with-temp-buffer
+        (condition-case err
+            (progn
+              (insert-file-contents output-file)
+              (delete-file output-file)
+              (let* ((content (split-string
+                               (buffer-substring-no-properties
+                                (point-min) (point-max)) "\n"))
+                     (suggested-type (intern (car content)))
+                     (result (mapconcat 'concat (cdr content) "\n"))
+                     ;; Either enforce the result-type requested by the
+                     ;; user, or use the one provided by julia if 'auto
+                     (result-type (if (eq result-type 'auto)
+                                      suggested-type
+                                    result-type)))
+                ;; Dispatch processing of result based on result-type
+                (pcase result-type
+                  ;; ('table
+                  ;;  ;; Add hline
+                  ;;  (let ((res (car (read-from-string result))))
+                  ;;    `(,(car res) hline ,(cdr res))))
+                  ('table (car (read-from-string result)))
+                  ('matrix (car (read-from-string result)))
+                  ('list (car (read-from-string result)))
+                  ('verbatim result)
+                  ('raw result)
+                  (t result))))
+          (error
+           (display-warning 'org-babel
+        		    (format "Error reading results: %S" err)
+        		    :error)
+           nil))))))
 
 (defun org-babel-julia-assign-to-var (name value)
   "Assign VALUE to a variable called NAME."
