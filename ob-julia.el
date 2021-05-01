@@ -51,7 +51,7 @@ automatically."
     (size		 . :any)
     (let		 . :any)
     (async		 . :any)
-    (results		 . ((file matrix table list)
+    (results		 . ((file matrix table list verbatim)
 			    (raw html latex org)
 			    (replace silent none append prepend)
 			    (output value))))
@@ -291,6 +291,7 @@ table. To force a matrix, use matrix"
      ((member "matrix" results) 'matrix)
      ((member "list" results) 'list)
      ((member "raw" results) 'raw)
+     ((member "verbatim" results) 'verbatim)
      (t 'auto))))
 
 (defun org-babel-julia-parse-result-format (params)
