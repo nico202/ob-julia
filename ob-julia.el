@@ -336,7 +336,7 @@ table. To force a matrix, use matrix"
                   ('list (car (read-from-string result)))
                   ('verbatim result)
                   ('raw result)
-                  (t result))))
+                  (_ result))))
           (error
            (display-warning 'org-babel
         		    (format "Error reading results: %S" err)
