@@ -21,7 +21,9 @@ lisp(s::AbstractString) = string("\"", stringify(s), "\"")
 lst(x) = wrap(join(lisp.(x), " "))
 
 sexp(t::Tuple) = lst(t)
-sexp(a::AbstractArray{T,1}) where T <: Any = wrap(join(lst.(a), " "))
-sexp(a::AbstractArray{T,2}) where T <: Any = sexp(collect(eachrow(a)))
+sexp(a::AbstractArray{T,1}) where T <: Union{AbstractString,Number} =
+    wrap(join(lst.(a), " "))
+sexp(a::AbstractArray{T,2}) where T <: Union{AbstractString,Number} =
+    sexp(collect(eachrow(a)))
 sexp(s::StepRange) = wrap(join(wrap.(s), " "))
 sexp(nt::NamedTuple) = wrap(join([wrap((k, nt[k])) for k in keys(nt)], " ")) 
