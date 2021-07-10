@@ -139,6 +139,7 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
     if ! success
         # Execution failed, write stacktrace file
         trace_file = string(output_file, ".trace")
+        write(output_file, "")
         write(trace_file, join(result, "\n"))
     end
     if result_is_output(params)
