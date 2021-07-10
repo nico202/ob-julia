@@ -56,3 +56,8 @@ function display(d::ObJuliaDisplay, ::MIME"text/org", nt::Vector{<:NamedTuple};
         print(d.io, ")")
     end
 end
+
+function display(d::ObJuliaDisplay, ::MIME"text/org", a::AbstractDict;
+                 kwargs...) where T <: Any
+    table(d, wrap(join(wrap.(reverse(join.([[lisp(stringify(k)), lisp(stringify(v))] for (k, v) in a], " "))), " ")))
+end
