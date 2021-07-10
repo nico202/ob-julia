@@ -124,6 +124,7 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
     # Parse the params (named tuple passed by ob-julia)
     params = Main.eval(Meta.parse(params))
     mime = output_mime(output_file)
+    latexify = something(params[:latexify], "nil") != "nil"
     # If results is output, running the code will start writing data
     # directly on the output file.  That's ok, but we need to tell
     # ob-julia the way this data is formatted.  We have no idea, so
@@ -157,7 +158,10 @@ function OrgBabelEval(src_file, output_file, params, async_uuid=nothing)
         # Since display function might get re-defined during the
         # execution of this function (because of OrgBabelReload) we
         # want to be sure to call the latest version
-        Base.invokelatest(display, ObJuliaDisplay(io), mime, result; params...)
+        Base.invokelatest(display, ObJuliaDisplay(io),
+                          if mime == MIME("text/org") && latexify
+                              MIME("text/org+latexify")
+                          else mime end, result; params...)
         write(output_file, take!(io))
     end
     if async_uuid !== nothing

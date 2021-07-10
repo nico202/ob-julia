@@ -70,4 +70,7 @@ function define_DataFrames()
         table(d, string("((", join(lisp.(names(df)), " "), ") hline ",
                         sexp(Matrix(df))[2:end]))
     end
+    @eval function display(d::ObJuliaDisplay, ::MIME"text/org+latexify", df::Main.DataFrame; kwargs...)
+        display(d, MIME("text/org"), df; kwargs...)
+    end
 end

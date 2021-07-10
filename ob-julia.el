@@ -44,6 +44,10 @@ automatically."
   :version "24.1"
   :type 'string)
 
+(defcustom ob-julia-insert-latex-environment-advice t
+  "When non-nil, add advice on loading to make latex environment results raw.
+`org-babel-insert-result' will be advised by `ob-julia-latexify-make-raw'.")
+
 (defconst org-babel-header-args:julia
   '((width		 . :any)
     (height		 . :any)
@@ -87,6 +91,7 @@ equivalents."
                       (param->julia :results)
                       ;; Optional arguments.  We pass them all and let
                       ;; julia decide what to do
+                      (param->julia :latexify)
                       (param->julia :size)
                       (param->julia :width)
                       (param->julia :height))
@@ -341,6 +346,42 @@ table. To force a matrix, use matrix"
         		    (format "Error reading results: %S" err)
         		    :error)
            nil))))))
+
+(defcustom ob-julia-latexify-star-environments t
+  "Insert an asterisk in the environment name of generated LaTeX.
+By default, latexify's outermost environment is usually unstarred, e.g.
+\\begin{environment}. When set, this will insert an asterisk at the end of
+the environment name, i.e. \\begin{environment*}."
+  :type 'boolean
+  :group 'org-babel)
+
+(defun ob-julia-latexify-make-raw (orig-fn result &optional result-params info hash lang)
+  (unless (and (stringp result)
+               (string= lang "julia")
+               (let ((latex-env (string-match-p "\\`\\\\begin" result))
+                     (latex-disp (string-match-p "\\`\\$\\$[^\u0000]+\\$\\$\\'" result))
+                     (latex-inline (string-match-p "\\`\\$[^\u0000]+\\$\\'" result)))
+                 (when (or latex-env latex-disp latex-inline)
+                   (if (or latex-disp latex-inline)
+                       (setf result (replace-regexp-in-string "\\`\\$\\$?\\([^\u0000]+\\)\\$\\$?\\'"
+                                                              "\\\\begin{equation*}\n\\1\n\\\\end{equation*}"
+                                                              result))
+                     (when ob-julia-latexify-star-environments
+                       (setf result (replace-regexp-in-string
+                                     "\\`\\\\begin{\\([a-z]+\\)}\\([^\u0000]+\\)\\\\end{[a-z]+}\n\\'"
+                                     "\\\\begin{\\1*}\\2\\\\end{\\1*}\n"
+                                     result))))
+                   (funcall orig-fn result (append result-params '("raw")) info hash lang)
+                   (when (bound-and-true-p org-fragtog-mode)
+                     (save-excursion
+                       (goto-char (org-babel-where-is-src-block-result nil info))
+                       (forward-line 1)
+                       (org-latex-preview)))
+                   t)))
+    (funcall orig-fn result result-params info hash lang)))
+
+(when ob-julia-insert-latex-environment-advice
+  (advice-add 'org-babel-insert-result :around #'ob-julia-latexify-make-raw))
 
 (defun org-babel-julia-assign-to-var (name value)
   "Assign VALUE to a variable called NAME."
