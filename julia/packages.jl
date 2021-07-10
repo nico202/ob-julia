@@ -67,6 +67,7 @@ function define_DataFrames()
     end
     @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
                            df::Main.DataFrame; kwargs...)
-        table(d, sexp(eachrow(df) .|> collect))
+        table(d, string("((", join(lisp.(names(df)), " "), ") hline ",
+                        sexp(Matrix(df))[2:end]))
     end
 end
