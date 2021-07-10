@@ -17,14 +17,15 @@ wrap(t::Tuple) = lst(t)
 lisp(i) = i
 lisp(i::Number) = i
 lisp(n::Nothing) = "nil"
-lisp(s::AbstractString) = string("\"", stringify(s), "\"")
+lisp(s::AbstractString) = string("\"", reduce(replace, ('\\' => "\\\\", '"' => "\\\""), init=s), "\"")
 lst(x) = wrap(join(lisp.(x), " "))
+lst(s::AbstractString) = wrap(lisp(s))
 
 sexp(t::Tuple) = lst(t)
-sexp(a::AbstractArray{T,1}) where T <: Union{AbstractString,Number} =
-    wrap(join(lst.(a), " "))
-sexp(a::AbstractArray{T,2}) where T <: Union{AbstractString,Number} =
-    sexp(collect(eachrow(a)))
+sexp(a::AbstractVector) = wrap(join(wrap.(lisp.(stringify.(a))), " "))
+sexp(a::AbstractMatrix) =
+    wrap(join([wrap(join(ObJulia.lisp.(ObJulia.stringify.(r)), " "))
+               for r in eachrow(a)], " "))
 sexp(s::StepRange) = wrap(join(wrap.(s), " "))
 sexp(nt::NamedTuple) = wrap(join([wrap((k, nt[k])) for k in keys(nt)], " ")) 
 sexp(a::Any) = "\"WARNING: Type $(typeof(a)) cannot be converted to sexp by ob-julia.\""
