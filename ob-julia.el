@@ -538,7 +538,7 @@ If UUID is provided, run the block asynchronously."
       (org-babel-julia-evaluate-in-session:async
        session uuid OrgBabelEval-call block output-file
        (list params output-file org-buffer))
-    (org-babel-julia-process-results
+    (ob-julia-dispatch-output-type
      params
      (org-babel-julia-evaluate-in-session:sync
       session OrgBabelEval-call block output-file))))
