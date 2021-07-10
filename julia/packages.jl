@@ -9,6 +9,7 @@
 
 Packages already included in a session get removed from this list."""
 const supported_packages = [
+    :LinearAlgebra,
     :DataFrames,
     :Latexify, :LaTeXStrings]
 
@@ -26,6 +27,11 @@ function OrgBabelReload()
             filter!(x -> x != pkg, supported_packages)
         end
     end
+end
+
+function define_LinearAlgebra()
+    @eval sexp(a::Main.LinearAlgebra.Adjoint{AbstractMatrix}) = sexp(collect(a))
+    @eval sexp(a::Main.LinearAlgebra.Adjoint{AbstractVector}) = wrap(join(lisp.(stringify.(a)), " "))
 end
 
 function define_LaTeXStrings()
