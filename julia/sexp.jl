@@ -27,3 +27,4 @@ sexp(a::AbstractArray{T,2}) where T <: Union{AbstractString,Number} =
     sexp(collect(eachrow(a)))
 sexp(s::StepRange) = wrap(join(wrap.(s), " "))
 sexp(nt::NamedTuple) = wrap(join([wrap((k, nt[k])) for k in keys(nt)], " ")) 
+sexp(a::Any) = "\"WARNING: Type $(typeof(a)) cannot be converted to sexp by ob-julia.\""
