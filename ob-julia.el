@@ -81,7 +81,7 @@ equivalents."
            (val (if val
                     (format "%S" val)
                   "nothing")))
-      (format "%s=%s" name val)))
+      (format "%s=%s" (subst-char-in-string ?- ?_ name) val)))
   ;; Create a named tuple (the comma is required to make it a tuple
   ;; if only one element is present)
   (format "(%s,)"
@@ -94,7 +94,9 @@ equivalents."
                       (param->julia :latexify)
                       (param->julia :size)
                       (param->julia :width)
-                      (param->julia :height))
+                      (param->julia :height)
+                      (param->julia :output-dir)
+                      (param->julia :file-ext))
                      ", ")))
 
 (defvar org-babel-julia--async-map '()

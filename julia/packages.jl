@@ -11,7 +11,8 @@ Packages already included in a session get removed from this list."""
 const supported_packages = [
     :LinearAlgebra,
     :DataFrames,
-    :Latexify, :LaTeXStrings]
+    :Latexify, :LaTeXStrings,
+    :Gadfly, :Plots]
 
 "Call define_\$pkg function."
 define_package_functions(pkg::Symbol) = (@eval $pkg)()
@@ -73,4 +74,56 @@ function define_DataFrames()
     @eval function display(d::ObJuliaDisplay, ::MIME"text/org+latexify", df::Main.DataFrame; kwargs...)
         display(d, MIME("text/org"), df; kwargs...)
     end
+end
+
+function define_Gadfly()
+    @eval interpretlength(_::Nothing, default) = default
+    @eval interpretlength(length::Int, default) = length * Main.Gadfly.inch
+    @eval function interpretlength(length::String, default)
+        m = match(r"^([\d.]+)([a-z]+)$", length)
+        units = Dict("mm" => Main.Gadfly.mm,
+                     "cm" => Main.Gadfly.cm,
+                     "pt" => Main.Gadfly.pt,
+                     "px" => Main.Gadfly.px,
+                     "in" => Main.Gadfly.inch,
+                     "inch" => Main.Gadfly.inch)
+        if ! isnothing(m)
+            parse(Float64, m.captures[1]) * get(units, m.captures[2], Main.Gadfly.inch)
+        else
+            default
+        end
+    end
+    @eval function display(d::ObJuliaDisplay, ::MIME"text/org",
+                           p::Main.Gadfly.Plot; height=nothing, width=nothing, output_dir=nothing, file_ext=nothing, kwargs...)
+        filename = string(tempname(if ! isnothing(output_dir) output_dir else tempdir() end),
+                          if isnothing(file_ext) ".svg" else "." * file_ext end)
+        width = interpretlength(width, √200*Main.Gadfly.cm)
+        height = interpretlength(height, 10*Main.Gadfly.cm)
+        Main.Gadfly.draw(Main.Gadfly.SVG(filename, width, height), p)
+        verbatim(d, filename)
+    end
+    @eval function saveplot(d::ObJuliaDisplay, formatter, p::Main.Gadfly.Plot; height=nothing, width=nothing)
+        width = interpretlength(width, √200*Main.Gadfly.cm)
+        height = interpretlength(height, 10*Main.Gadfly.cm)
+        Main.Gadfly.draw(formatter(d.io, width, height), p)
+    end
+    @eval display(d::ObJuliaDisplay, ::MIME"image/svg+xml", p::Main.Gadfly.Plot; height=nothing, width=nothing, kwargs...) =
+        saveplot(d, Main.Gadfly.SVG, p; height, width)
+    @eval display(d::ObJuliaDisplay, ::MIME"image/png", p::Main.Gadfly.Plot; height=nothing, width=nothing, kwargs...) =
+        saveplot(d, Main.Gadfly.PNG, p; height, width)
+    @eval display(d::ObJuliaDisplay, ::MIME"image/png", p::Main.Gadfly.Plot; height=nothing, width=nothing, kwargs...) =
+        saveplot(d, Main.Gadfly.PNG, p; height, width)
+    @eval display(d::ObJuliaDisplay, ::MIME"application/pdf", p::Main.Gadfly.Plot; height=nothing, width=nothing, kwargs...) =
+        saveplot(d, Main.Gadfly.PDF, p; height, width)
+    @eval display(d::ObJuliaDisplay, ::MIME"application/postscript", p::Main.Gadfly.Plot; height=nothing, width=nothing, kwargs...) =
+        saveplot(d, Main.Gadfly.PS, p; height, width)
+end
+
+function define_Plots()
+    @eval display(d::ObJuliaDisplay, mime::M, p::Main.Plots.Plot; kwargs...) where
+    { M <: Union{MIME"image/png", MIME"image/svg+xml", MIME"application/pdf", MIME"application/postscript",
+                 MIME"image/eps", MIME"application/x-tex", MIME"text/html"}}=
+                     show(d.io, mime, p)
+    @eval display(d::ObJuliaDisplay, mime::MIME"text/org", p::Main.Plots.Plot; kwargs...) =
+        (verbatim(d); show(d.io, MIME("text/plain"), p))
 end
