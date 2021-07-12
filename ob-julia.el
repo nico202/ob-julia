@@ -29,7 +29,7 @@
   :type 'string)
 
 (defcustom ob-julia-startup-script
-  (expand-file-name "julia/init.jl" (file-name-directory load-file-name))
+  (expand-file-name "julia/init.jl" (file-name-directory (or load-file-name buffer-file-name)))
   "Julia file path to run at startup.  Must be absolute."
   :group 'org-babel
   :package-version '(ob-julia . "1.0.0")
