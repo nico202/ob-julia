@@ -28,6 +28,13 @@
   :version "24.1"
   :type 'string)
 
+(defcustom org-babel-julia-command-arguments nil
+  "Arguments to apply to `org-babel-julia-external-command'."
+  :group 'org-babel
+  :package-version '(ob-julia . "1.0.0")
+  :version "24.1"
+  :type 'string)
+
 (defcustom ob-julia-startup-script
   (expand-file-name "julia/init.jl" (file-name-directory (or load-file-name buffer-file-name)))
   "Julia file path to run at startup.  Must be absolute."
@@ -233,6 +240,7 @@ async evaluation)."
   (let ((buf (ob-julia--make-trace-buffer -1))
         (cmd
          `(,org-babel-julia-external-command
+           ,@org-babel-julia-command-arguments
            "--load" ,ob-julia-startup-script
            "--eval" ,org-babel-eval-call)))
     (if async
@@ -494,11 +502,13 @@ If session should not be used, return nil.
         (ess-ask-for-ess-directory nil))
     (save-window-excursion
       (let* ((start-script-arg
-	      (concat (format "--load=%s" ob-julia-startup-script)))
-	     (inferior-julia-args (if inferior-julia-args
-	        		      (concat inferior-julia-args start-script-arg)
-	        		    start-script-arg)))
-	(switch-to-buffer (run-ess-julia)))
+              (concat
+               (mapconcat #'identity org-babel-julia-command-arguments " ")
+               (format " --load=%s" ob-julia-startup-script)))
+             (inferior-julia-args (if inferior-julia-args
+                                      (concat inferior-julia-args " " start-script-arg)
+                                    start-script-arg)))
+        (switch-to-buffer (run-ess-julia)))
       (rename-buffer
        (if (bufferp session)
            (buffer-name session)
