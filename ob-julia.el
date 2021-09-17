@@ -264,14 +264,18 @@ Please submit a bug report!")
   "Expand BODY according to PARAMS.  Return the expanded body, a
   string containing the julia we need to evaluate, possibly
   wrapped in a let block with variable assignmenetns."
-  (let ((block (and (alist-get :let params) "let"))
-        (vars (mapconcat
-               'concat (org-babel-variable-assignments:julia params) ";")))
+  (let* ((block (and (alist-get :let params) "let"))
+         (var-assign (org-babel-variable-assignments:julia params))
+         (vars
+          (if var-assign
+              (concat
+               (mapconcat
+                'concat (org-babel-variable-assignments:julia params) ";") "; ")
+            "")))
     (concat
      ;; no newline between vars and body
      ;; so that the stacktrace line is aligned
-     block " " vars "; " body
-     ";\n"
+     block " " vars body ";\n"
      (if block "end\n" ""))))
 
 (defun org-babel-julia-output-file (file &optional extension)
